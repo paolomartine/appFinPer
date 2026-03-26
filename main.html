@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestor de Finanzas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
+            margin: 0;
+        }
+
+        header {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 30px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1e8449;
+        }
+
+        .balance {
+            font-size: 24px;
+            margin: 15px 0;
+        }
+
+        .income {
+            color: green;
+        }
+
+        .expense {
+            color: red;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 10px;
+            margin-top: 5px;
+            border-left: 5px solid;
+            background: #f9f9f9;
+        }
+
+        .ingreso {
+            border-color: green;
+        }
+
+        .gasto {
+            border-color: red;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>💰 Gestor de Finanzas Personales</h1>
+</header>
+
+<div class="container">
+
+    <h2>Balance</h2>
+    <div class="balance">Total: $<span id="balance">0</span></div>
+    <div>Ingresos: $<span id="ingresos">0</span></div>
+    <div>Gastos: $<span id="gastos">0</span></div>
+
+    <h3>Agregar movimiento</h3>
+    <input type="text" id="descripcion" placeholder="Descripción">
+    <input type="number" id="monto" placeholder="Monto">
+
+    <select id="tipo">
+        <option value="ingreso">Ingreso</option>
+        <option value="gasto">Gasto</option>
+    </select>
+
+    <button onclick="agregar()">Agregar</button>
+
+    <h3>Historial</h3>
+    <ul id="lista"></ul>
+
+</div>
+
+<script>
+    let transacciones = JSON.parse(localStorage.getItem("transacciones")) || [];
+
+    function guardar() {
+        localStorage.setItem("transacciones", JSON.stringify(transacciones));
+    }
+
+    function render() {
+        let lista = document.getElementById("lista");
+        lista.innerHTML = "";
+
+        let ingresos = 0;
+        let gastos = 0;
+
+        transacciones.forEach((t, index) => {
+            let li = document.createElement("li");
+            li.className = t.tipo;
+
+            li.innerHTML = `
+                ${t.descripcion} - $${t.monto}
+                <button onclick="eliminar(${index})">X</button>
+            `;
+
+            lista.appendChild(li);
+
+            if (t.tipo === "ingreso") ingresos += t.monto;
+            else gastos += t.monto;
+        });
+
+        document.getElementById("ingresos").innerText = ingresos;
+        document.getElementById("gastos").innerText = gastos;
+        document.getElementById("balance").innerText = ingresos - gastos;
+    }
+
+    function agregar() {
+        let descripcion = document.getElementById("descripcion").value;
+        let monto = parseFloat(document.getElementById("monto").value);
+        let tipo = document.getElementById("tipo").value;
+
+        if (!descripcion || isNaN(monto)) {
+            alert("Completa todos los campos");
+            return;
+        }
+
+        transacciones.push({ descripcion, monto, tipo });
+        guardar();
+        render();
+
+        document.getElementById("descripcion").value = "";
+        document.getElementById("monto").value = "";
+    }
+
+    function eliminar(index) {
+        transacciones.splice(index, 1);
+        guardar();
+        render();
+    }
+
+    render();
+</script>
+
+</body>
+</html>
